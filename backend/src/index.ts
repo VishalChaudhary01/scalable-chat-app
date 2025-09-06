@@ -3,6 +3,7 @@ import { Env } from './config/env.config';
 import { errorHandler } from './middlewares/error-handler';
 import { AppError } from './utils/app-error';
 import { HttpStatus } from './config/http.config';
+import { logger } from './utils/logger';
 
 const app = express();
 
@@ -19,5 +20,5 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 app.use(errorHandler);
 
 app.listen(PORT, () =>
-  console.log(`Server running at http://localhost${PORT}`)
+  logger.info(`Server running at http://localhost${PORT}`)
 );

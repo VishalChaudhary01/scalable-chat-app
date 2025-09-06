@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { HttpStatus } from '../config/http.config';
 import { Env } from '../config/env.config';
 import { AppError } from '../utils/app-error';
+import { logger } from '../utils/logger';
 
 export function errorHandler(
   error: Error,
@@ -9,7 +10,7 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ) {
-  console.error(`Error occurred at PATH: ${req.path}`, error);
+  logger.warn(`Error occurred at PATH: ${req.path}`, error);
 
   if (error instanceof AppError) {
     return res.status(error.statusCode).json({
