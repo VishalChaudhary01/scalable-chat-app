@@ -3,6 +3,7 @@ import { HttpStatus } from '../config/http.config';
 import { Env } from '../config/env.config';
 import { AppError } from '../utils/app-error';
 import { logger } from '../utils/logger';
+import { ZodError } from 'zod';
 
 export function errorHandler(
   error: Error,
@@ -16,6 +17,12 @@ export function errorHandler(
     return res.status(error.statusCode).json({
       message: error.message,
     });
+  }
+
+  if (error instanceof ZodError) {
+    const message = error.issues.map((issue) => `${issue.message}`).join(', ');
+
+    return res.status(HttpStatus.BAD_REQUEST).json({ message });
   }
 
   return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
