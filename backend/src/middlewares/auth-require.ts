@@ -31,6 +31,7 @@ export async function authRequire(
       throw new AppError('Invalid or expired token', HttpStatus.UNAUTHORIZED);
     }
 
+    req.userId = userId;
     req.sessionId = sessionId;
     next();
   } catch (error) {

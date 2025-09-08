@@ -236,7 +236,9 @@ export class AuthService {
   }
 
   static async forgotPassword(data: ForgotPasswordInput) {
-    const user = await prisma.user.findFirst({ where: { email: data.email } });
+    const user = await prisma.user.findFirst({
+      where: { email: data.email, emailVerified: true },
+    });
     if (!user) {
       throw new AppError(
         'No account found with this email address',
@@ -283,7 +285,7 @@ export class AuthService {
     const { userId, emailVerificationType } = payload;
 
     const user = await prisma.user.findFirst({
-      where: { id: userId },
+      where: { id: userId, emailVerified: true },
     });
     if (!user) {
       throw new AppError(
