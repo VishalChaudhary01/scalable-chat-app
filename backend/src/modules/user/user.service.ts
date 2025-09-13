@@ -3,8 +3,14 @@ import { prisma } from '../../config/db.config';
 import { AppError } from '../../utils/app-error';
 import { HttpStatus } from '../../config/http.config';
 
+export interface TrimedUser {
+  id: string;
+  name: string | null;
+  email: string;
+}
+
 export class UserService {
-  static getTrimedUser(user: User) {
+  static getTrimedUser(user: User): TrimedUser {
     return { id: user.id, name: user.name, email: user.email };
   }
 

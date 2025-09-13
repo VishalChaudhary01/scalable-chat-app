@@ -7,10 +7,15 @@ import { HttpStatus } from './config/http.config';
 import { logger } from './utils/logger';
 import authRoutes from './modules/auth/auth.route';
 import { connectDabase } from './config/db.config';
+import { configurePassportStrategy } from './config/passport.config';
+import userRoutes from './modules/user/user.route';
 
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
+
+configurePassportStrategy();
+
 const PORT = Env.PORT;
 
 app.get('/health', (_req: Request, res: Response) => {
@@ -18,6 +23,7 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/user', userRoutes);
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
   next(new AppError(`API route ${req.path} not found`, HttpStatus.NOT_FOUND));

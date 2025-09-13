@@ -6,7 +6,7 @@ export const prisma = new PrismaClient();
 
 export async function connectDabase() {
   try {
-    await prisma.user.count();
+    await prisma.$connect();
     logger.info('Database connected!');
   } catch (err) {
     logger.error('Database not reachable:', err);

@@ -2,13 +2,20 @@ import { createLogger, format, transports } from 'winston';
 import 'winston-daily-rotate-file';
 import { Env } from '../config/env.config';
 
+const customFormat = format.printf(({ level, message, timestamp }) => {
+  if (message instanceof Error) {
+    return `${timestamp} [${level.toUpperCase()}]: ${message.message}${
+      Env.NODE_ENV !== 'production' && message.stack ? `\n${message.stack}` : ''
+    }`;
+  }
+  return `${timestamp} [${level.toUpperCase()}]: ${message}`;
+});
+
 export const logger = createLogger({
   level: Env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: format.combine(
     format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    format.printf(({ level, message, timestamp }) => {
-      return `${timestamp} [${level.toUpperCase()}]: ${message}`;
-    })
+    customFormat
   ),
   transports: [
     new transports.Console(),

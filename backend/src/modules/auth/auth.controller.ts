@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { prisma } from '../../config/db.config';
 import {
   ForgotPasswordInput,
@@ -16,6 +16,8 @@ import { Env } from '../../config/env.config';
 import { calculateDate } from '../../utils/date-time';
 import { AuthService } from './auth.service';
 import { logger } from '../../utils/logger';
+import passport from 'passport';
+import { UserWithJWT } from '../../config/passport.config';
 
 export class AuthController {
   static async signup(req: Request, res: Response) {
@@ -171,5 +173,64 @@ export class AuthController {
     res.status(HttpStatus.OK).json({
       message: 'Log-out successful',
     });
+  }
+
+  // GOOGLE AUTH
+  static googleAuth(req: Request, res: Response, next: NextFunction) {
+    passport.authenticate('google', {
+      scope: ['profile', 'email'],
+      session: false,
+    })(req, res, next);
+  }
+
+  static async googleAuthCallback(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        passport.authenticate(
+          'google',
+          { session: false },
+          (err: any, user: UserWithJWT | false) => {
+            if (err) {
+              return reject(
+                new AppError('Authentication failed', HttpStatus.UNAUTHORIZED)
+              );
+            }
+
+            if (!user) {
+              return reject(
+                new AppError('Authentication failed', HttpStatus.UNAUTHORIZED)
+              );
+            }
+
+            clearCookies(res, [
+              CookieNames.ACCESS_TOKEN,
+              CookieNames.REFRESH_TOKEN,
+              CookieNames.VERIFICATION_TOKEN,
+            ]);
+
+            setCookies(res, [
+              { name: CookieNames.ACCESS_TOKEN, value: user.accessToken },
+              {
+                name: CookieNames.REFRESH_TOKEN,
+                value: user.refreshToken,
+                path: '/auth/refresh-token',
+                expires: calculateDate(
+                  Env.JWT_REFRESH_EXPIRESIN as StringValue
+                ),
+              },
+            ]);
+
+            return resolve(res.redirect(`${Env.FRONTEND_URL}`));
+          }
+        )(req, res, next);
+      });
+    } catch (error) {
+      logger.error('Unexpected Google auth error:', error);
+      next(error);
+    }
   }
 }

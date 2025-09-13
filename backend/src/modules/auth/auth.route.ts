@@ -39,4 +39,8 @@ authRoutes.post(
 
 authRoutes.post('/signout', authRequire, AuthController.signout);
 
+// GOOGLE AUTH
+authRoutes.get('/google', AuthController.googleAuth);
+authRoutes.get('/google/callback', AuthController.googleAuthCallback);
+
 export default authRoutes;
